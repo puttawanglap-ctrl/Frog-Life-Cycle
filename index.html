@@ -3,465 +3,860 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ผจญภัยอาณาจักรพยัญชนะไทย 🇹🇭✨</title>
+    <title>Frog Life Cycle Adventure</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #FF85A2;
-            --secondary: #70D6FF;
-            --accent: #FFD670;
-            --success: #99FFAC;
-            --white: #ffffff;
+            --primary: #4ADE80;
+            --water: #0ea5e9;
+            --water-dark: #0284c7;
         }
-
-        body {
-            font-family: 'Mali', cursive;
-            background: linear-gradient(180deg, #A0E7FF 0%, #FFFFFF 100%);
-            height: 100vh;
+        
+        body, html {
             margin: 0;
-            overflow: hidden;
-            user-select: none;
-            touch-action: manipulation;
-        }
-
-        .kawaii-shadow {
-            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
-        }
-
-        .btn-bounce:active {
-            transform: scale(0.95) translateY(4px);
-            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
-        }
-
-        .floating {
-            animation: floating 3s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .screen {
-            display: none;
-            height: 100%;
+            padding: 0;
             width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--water-dark);
+            font-family: 'Mali', cursive;
+            touch-action: none; /* Prevent scroll on mobile */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #38bdf8 0%, #0369a1 100%);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
             position: absolute;
             top: 0;
             left: 0;
-            padding: 20px;
-            flex-direction: column;
-            align-items: center;
+            z-index: 1;
         }
 
-        .active { display: flex; }
-
-        .letter-card {
-            background: white;
-            border: 4px solid var(--primary);
-            border-radius: 25px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .letter-card:hover { transform: rotate(3deg) scale(1.05); }
-
-        .progress-bar {
-            height: 20px;
-            background: #eee;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #ddd;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .confetti {
+        .ui-layer {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background: red;
-            animation: fall 3s linear forwards;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none; /* Let clicks pass through if empty */
         }
 
-        @keyframes fall {
-            to { transform: translateY(100vh) rotate(360deg); }
-        }
-
-        /* Modal styling */
-        .modal-overlay {
-            background: rgba(0,0,0,0.5);
+        .panel {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 4px solid white;
             backdrop-filter: blur(5px);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(74, 222, 128, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(74, 222, 128, 0.9); }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes water-ripple {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        .bouncing-in { animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .water-bg {
+            background: linear-gradient(-45deg, #0ea5e9, #38bdf8, #0284c7, #0369a1);
+            background-size: 400% 400%;
+            animation: water-ripple 15s ease infinite;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #4ade80, #16a34a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 99px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #14532d, 0 8px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.1s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #14532d, 0 4px 5px rgba(0,0,0,0.2);
+        }
+        .btn-blue {
+            background: linear-gradient(to bottom, #60a5fa, #2563eb);
+            box-shadow: 0 4px 0 #1e3a8a, 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .btn-blue:active {
+            box-shadow: 0 0px 0 #1e3a8a, 0 4px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Hide elements */
+        .hidden { display: none !important; }
+
+        .dialog-box {
+            position: absolute;
+            bottom: 20px;
+            left: 5%;
+            width: 90%;
+            background: white;
+            border: 4px solid #fcd34d;
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        .dialog-avatar {
+            font-size: 3rem;
+            background: #d1fae5;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 3px solid #10b981;
+        }
+
+        .emoji-sprite { font-size: 2rem; position: absolute; pointer-events: none; }
+        
+        #top-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: auto;
+            z-index: 20;
+        }
+        .hud-item {
+            background: rgba(0,0,0,0.4);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- UI Overlay (Fixed) -->
-    <div id="ui-overlay" class="hidden fixed top-0 left-0 w-full p-4 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <button onclick="goHome()" class="bg-white p-2 rounded-full border-2 border-pink-400 btn-bounce">🏠</button>
-            <div class="bg-white px-3 py-1 rounded-full border-2 border-pink-400 flex items-center gap-2 shadow-sm">
-                <span id="ui-stars">⭐ 0</span>
-                <span id="ui-coins">🪙 0</span>
-            </div>
-        </div>
-        <div class="flex items-center gap-2">
-            <div class="bg-white px-4 py-1 rounded-full border-2 border-blue-400 font-bold text-blue-600" id="ui-player-name">นักเรียน</div>
-            <button onclick="toggleSound()" id="sound-btn" class="bg-white p-2 rounded-full border-2 border-blue-400 btn-bounce">🔊</button>
-        </div>
+<div id="game-container" class="water-bg">
+    <!-- Game Canvas (WebGL/2D Context) -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top HUD -->
+    <div id="top-bar" class="hidden">
+        <div class="hud-item"><span id="hud-stage">ด่าน: 1</span></div>
+        <div class="hud-item text-yellow-300">⭐ <span id="hud-score">0</span></div>
     </div>
 
-    <!-- 1. Login Screen -->
-    <div id="screen-login" class="screen active justify-center bg-[#FFD6E0]">
-        <div class="bg-white p-8 rounded-[40px] border-8 border-pink-300 w-full max-w-sm text-center shadow-2xl">
-            <h1 class="text-3xl font-bold text-pink-500 mb-2">ยินดีต้อนรับ! 🐼</h1>
-            <p class="text-gray-500 mb-6 italic">ใส่ข้อมูลเพื่อเริ่มผจญภัย</p>
+    <!-- UI Layer (Menus, Dialogs, Quizzes) -->
+    <div id="ui-layer" class="ui-layer items-center justify-center">
+        
+        <!-- Screen: Main Menu -->
+        <div id="screen-menu" class="panel text-center flex flex-col items-center bouncing-in w-11/12 max-w-sm relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 text-6xl opacity-20">🐸</div>
+            <div class="absolute -bottom-10 -left-10 text-6xl opacity-20">🫧</div>
             
-            <input type="text" id="input-name" placeholder="ชื่อเล่น" class="w-full mb-3 p-4 rounded-2xl border-4 border-pink-100 outline-none focus:border-pink-300 text-center text-xl">
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="input-class" placeholder="ชั้น (เช่น ป.1)" class="w-1/2 p-4 rounded-2xl border-4 border-pink-100 outline-none focus:border-pink-300 text-center">
-                <input type="number" id="input-no" placeholder="เลขที่" class="w-1/2 p-4 rounded-2xl border-4 border-pink-100 outline-none focus:border-pink-300 text-center">
-            </div>
-
-            <button onclick="startGame()" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-2xl py-4 rounded-2xl font-bold kawaii-shadow btn-bounce">เข้าสู่ห้องเรียน ✨</button>
+            <h1 class="text-3xl font-bold text-emerald-600 mb-2 drop-shadow-md">วงจรชีวิตกบ</h1>
+            <p class="text-gray-500 mb-6 font-semibold">การผจญภัยของเจ้ากบน้อย</p>
             
-            <button onclick="showAdmin()" class="mt-8 text-xs text-gray-300">Admin Only</button>
+            <div class="text-7xl mb-6 floating" style="animation-duration: 2s;">🐸</div>
+            
+            <button id="btn-start" class="btn w-full mb-4" style="animation: pulse-glow 2s infinite;">เริ่มเล่นเกมเลย!</button>
+            <button id="btn-sound" class="btn btn-blue w-full mb-2">🔊 เปิดเสียง</button>
         </div>
-    </div>
 
-    <!-- 2. Main Menu -->
-    <div id="screen-menu" class="screen">
-        <div class="mt-20 text-center">
-            <h2 class="text-4xl font-bold text-blue-500 floating mb-2">เลือกด่านเรียนรู้ 🏰</h2>
-            <div class="grid grid-cols-2 gap-4 mt-8 max-w-md">
-                <button onclick="loadModule('thai')" class="bg-[#FF9AA2] p-6 rounded-3xl border-b-8 border-red-400 text-white font-bold text-xl btn-bounce">
-                    <div class="text-4xl mb-2">🇹🇭</div> ก-ฮ
-                </button>
-                <button onclick="loadModule('vowel')" class="bg-[#B5EAD7] p-6 rounded-3xl border-b-8 border-green-400 text-white font-bold text-xl btn-bounce">
-                    <div class="text-4xl mb-2">🌈</div> สระไทย
-                </button>
-                <button onclick="loadModule('tone')" class="bg-[#FFDAC1] p-6 rounded-3xl border-b-8 border-orange-300 text-white font-bold text-xl btn-bounce">
-                    <div class="text-4xl mb-2">✨</div> วรรณยุกต์
-                </button>
-                <button onclick="loadModule('abc')" class="bg-[#C7CEEA] p-6 rounded-3xl border-b-8 border-purple-400 text-white font-bold text-xl btn-bounce">
-                    <div class="text-4xl mb-2">🔤</div> A-Z
-                </button>
-            </div>
-            
-            <div class="mt-10 flex gap-4">
-                <button onclick="showLeaderboard()" class="bg-yellow-400 px-6 py-2 rounded-full text-white font-bold btn-bounce shadow-md">🏆 อันดับ</button>
-                <button onclick="showStickers()" class="bg-blue-400 px-6 py-2 rounded-full text-white font-bold btn-bounce shadow-md">🎁 ของสะสม</button>
+        <!-- Screen: Dialog (Teacher Turtle) -->
+        <div id="screen-dialog" class="dialog-box hidden bouncing-in">
+            <div class="dialog-avatar">🐢</div>
+            <div class="flex-1">
+                <h3 class="font-bold text-green-700 text-lg mb-1">คุณครูเต่า</h3>
+                <p id="dialog-text" class="text-gray-700 text-sm leading-tight">ยินดีต้อนรับสู่บึงน้ำใส! เรามาเรียนรู้วงจรชีวิตของกบกันเถอะ</p>
+                <button id="btn-next-dialog" class="mt-2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow active:translate-y-1 float-right">ต่อไป ▶</button>
             </div>
         </div>
-    </div>
 
-    <!-- 3. Learning View (Consonants) -->
-    <div id="screen-game" class="screen">
-        <div class="mt-16 w-full max-w-md">
-            <div class="progress-bar mb-4">
-                <div id="game-progress" class="progress-fill"></div>
-            </div>
+        <!-- Screen: Stage 3 Puzzle (Sprouting Legs) -->
+        <div id="screen-puzzle" class="panel hidden flex-col items-center bouncing-in w-11/12 max-w-sm">
+            <h2 class="text-2xl font-bold text-blue-600 mb-2">การเปลี่ยนแปลง!</h2>
+            <p class="text-center text-sm text-gray-600 mb-4">ลูกอ๊อดกำลังจะโต! อวัยวะใดจะงอกออกมาก่อนเป็นอันดับแรก?</p>
             
-            <div id="question-area" class="bg-white p-6 rounded-[30px] border-4 border-pink-200 shadow-xl text-center relative">
-                <div id="mascot" class="absolute -top-12 -left-4 text-5xl floating">🐼</div>
-                <h3 id="question-text" class="text-2xl font-bold text-gray-700 mb-6">จิ้มรูปที่คู่กับตัวอักษรนี้!</h3>
-                
-                <div id="target-display" class="text-8xl font-bold text-pink-500 mb-8 p-4 bg-pink-50 rounded-2xl inline-block min-w-[120px]">ก</div>
-                
-                <div id="options-grid" class="grid grid-cols-2 gap-4">
-                    <!-- Options injected by JS -->
-                </div>
+            <div class="text-6xl mb-4 floating bg-blue-100 p-4 rounded-full border-4 border-blue-300">🪱❓</div>
+            
+            <div class="grid grid-cols-2 gap-3 w-full">
+                <button class="btn btn-blue puzzle-btn" data-correct="false">ขาหน้า 🦾</button>
+                <button class="btn btn-blue puzzle-btn" data-correct="true">ขาหลัง 🦵</button>
+                <button class="btn btn-blue puzzle-btn" data-correct="false">หาง 🦎</button>
+                <button class="btn btn-blue puzzle-btn" data-correct="false">ปีก 🪽</button>
             </div>
         </div>
-    </div>
 
-    <!-- 4. Result Screen -->
-    <div id="screen-result" class="screen justify-center">
-        <div class="bg-white p-10 rounded-[40px] border-8 border-yellow-300 text-center max-w-sm shadow-2xl">
-            <h1 class="text-5xl mb-4">🎉</h1>
-            <h2 class="text-3xl font-bold text-gray-800">เก่งมาก!</h2>
-            <p class="text-xl text-pink-500 mb-6" id="result-name">นักเรียนตัวน้อย</p>
+        <!-- Screen: Quiz -->
+        <div id="screen-quiz" class="panel hidden flex-col items-center bouncing-in w-11/12 max-w-sm">
+            <h2 class="text-2xl font-bold text-purple-600 mb-2">คำถามท้ายด่าน 📝</h2>
+            <p id="quiz-question" class="text-center text-md font-bold text-gray-700 mb-4 h-12 flex items-center justify-center">ลูกอ๊อดหายใจด้วยอะไร?</p>
             
-            <div class="bg-yellow-50 p-6 rounded-2xl mb-8">
-                <div class="flex justify-around items-center">
-                    <div>
-                        <div class="text-3xl font-bold text-yellow-500" id="result-stars">0</div>
-                        <div class="text-sm text-gray-500">ดาวที่ได้รับ</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-blue-500" id="result-coins">0</div>
-                        <div class="text-sm text-gray-500">เหรียญทอง</div>
-                    </div>
-                </div>
+            <div id="quiz-options" class="flex flex-col gap-3 w-full">
+                <!-- Buttons injected via JS -->
             </div>
-
-            <button onclick="goHome()" class="w-full bg-green-400 text-white text-2xl py-4 rounded-2xl font-bold btn-bounce kawaii-shadow mb-4">กลับหน้าหลัก</button>
-            <button onclick="window.location.reload()" class="text-gray-400 font-bold underline">เล่นอีกรอบ</button>
+            <div id="quiz-feedback" class="mt-3 text-lg font-bold text-center h-6"></div>
         </div>
-    </div>
 
-    <!-- 5. Admin Panel -->
-    <div id="screen-admin" class="screen bg-gray-100 p-4">
-        <div class="bg-white w-full h-full rounded-2xl p-6 overflow-auto shadow-inner">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">📊 แผงควบคุมคุณครู</h2>
-                <button onclick="goHome()" class="text-red-500 font-bold">ปิด [X]</button>
+        <!-- Screen: Game Over / Victory -->
+        <div id="screen-victory" class="panel hidden flex-col items-center bouncing-in w-11/12 max-w-sm text-center">
+            <h1 class="text-3xl font-bold text-yellow-500 mb-2">ยินดีด้วย! 🎉</h1>
+            <p class="text-gray-600 mb-4">เจ้ากบน้อยเติบโตอย่างสมบูรณ์แล้ว</p>
+            
+            <div class="text-7xl mb-4 floating">🐸👑</div>
+            
+            <div class="bg-yellow-100 p-4 rounded-xl w-full mb-4 border-2 border-yellow-400">
+                <p class="text-sm text-yellow-800">คะแนนสะสม (ดาว)</p>
+                <p class="text-3xl font-bold text-yellow-600">⭐ <span id="final-score">0</span></p>
             </div>
             
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="p-2">ชื่อ</th>
-                        <th class="p-2">ชั้น</th>
-                        <th class="p-2">ดาว</th>
-                        <th class="p-2">คะแนนรวม</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-table-body">
-                    <!-- Data here -->
-                </tbody>
-            </table>
-            
-            <div class="mt-8 flex gap-2">
-                <button onclick="exportData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs">Export CSV</button>
-                <button onclick="clearData()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-xs">ล้างข้อมูลทั้งหมด</button>
-            </div>
+            <button id="btn-restart" class="btn w-full">เล่นอีกครั้ง</button>
         </div>
+
     </div>
+</div>
 
-    <script>
-        // --- Game Logic & State ---
-        let gameState = {
-            player: { name: '', class: '', no: '', stars: 0, coins: 0, level: 1 },
-            currentModule: 'thai',
-            currentStep: 0,
-            totalSteps: 5,
-            score: 0,
-            isMuted: false
-        };
+<script>
+/**
+ * Frog Life Cycle Adventure
+ * Vanilla JS Game Engine for single-file deployment
+ */
 
-        const DATA_THAI = [
-            { char: 'ก', img: '🐔', name: 'ไก่' },
-            { char: 'ข', img: '🥚', name: 'ไข่' },
-            { char: 'ค', img: '🐃', name: 'ควาย' },
-            { char: 'ง', img: '🐍', name: 'งู' },
-            { char: 'จ', img: '🍽️', name: 'จาน' },
-            { char: 'ฉ', img: '🥁', name: 'ฉิ่ง' },
-            { char: 'ช', img: '🐘', name: 'ช้าง' }
-        ];
-
-        const DATA_ABC = [
-            { char: 'A', img: '🍎', name: 'Apple' },
-            { char: 'B', img: '🐝', name: 'Bee' },
-            { char: 'C', img: '🐱', name: 'Cat' },
-            { char: 'D', img: '🐶', name: 'Dog' }
-        ];
-
-        // --- Core Functions ---
-
-        function startGame() {
-            const name = document.getElementById('input-name').value;
-            if (!name) return alert('กรุณาใส่ชื่อก่อนจ้า 😊');
-            
-            gameState.player.name = name;
-            gameState.player.class = document.getElementById('input-class').value;
-            gameState.player.no = document.getElementById('input-no').value;
-
-            document.getElementById('ui-player-name').innerText = name;
-            document.getElementById('ui-overlay').classList.remove('hidden');
-            
-            savePlayer();
-            switchScreen('screen-menu');
+// --- 1. Audio System (Web Audio API) ---
+const Audio = {
+    ctx: null,
+    soundEnabled: true,
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
-
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
         }
+    },
+    playTone(freq, type, duration, vol=0.1) {
+        if (!this.soundEnabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    },
+    bloop() { this.playTone(600, 'sine', 0.1, 0.1); this.playTone(800, 'sine', 0.15, 0.1); },
+    ribbit() { this.playTone(150, 'square', 0.1, 0.1); setTimeout(()=>this.playTone(180, 'square', 0.15, 0.1), 100); },
+    coin() { this.playTone(987.77, 'sine', 0.1, 0.1); setTimeout(()=>this.playTone(1318.51, 'sine', 0.3, 0.1), 100); },
+    wrong() { this.playTone(200, 'sawtooth', 0.3, 0.1); setTimeout(()=>this.playTone(150, 'sawtooth', 0.3, 0.1), 150); },
+    win() { [523, 659, 783, 1046].forEach((f, i) => setTimeout(()=>this.playTone(f, 'sine', 0.2, 0.1), i*150)); }
+};
 
-        function loadModule(module) {
-            gameState.currentModule = module;
-            gameState.currentStep = 0;
-            gameState.score = 0;
-            updateProgress();
-            nextQuestion();
-            switchScreen('screen-game');
+// --- 2. Game State & Data ---
+const GAME_STATE = {
+    MENU: 0, DIALOG: 1, STAGE_1: 2, STAGE_2: 3, PUZZLE: 4, STAGE_4: 5, QUIZ: 6, VICTORY: 7
+};
+
+const State = {
+    current: GAME_STATE.MENU,
+    stage: 1,
+    score: 0,
+    width: 0,
+    height: 0,
+    touchX: 0,
+    touchY: 0,
+    isTouching: false,
+    particles: [],
+    entities: [],
+    rainDrops: [],
+    isRaining: false,
+    dialogQueue: [],
+    currentQuizIndex: 0
+};
+
+const Quizzes = [
+    { q: "ไข่กบมีลักษณะอย่างไร?", opts: ["เปลือกแข็ง", "เป็นวุ้นใสๆ", "มีขนปกคลุม"], ans: 1 },
+    { q: "ลูกอ๊อดหายใจด้วยอะไร?", opts: ["ปอด", "เหงือก", "จมูก"], ans: 1 },
+    { q: "ลูกอ๊อดกินอะไรเป็นอาหารหลัก?", opts: ["ปลาเล็ก", "สาหร่าย/พืชน้ำ", "แมลง"], ans: 1 },
+    { q: "เมื่อเป็นกบโตเต็มวัย จะหายใจด้วยอะไร?", opts: ["เหงือกเท่านั้น", "ปอดและผิวหนัง", "จมูกอย่างเดียว"], ans: 1 }
+];
+
+// --- 3. DOM Elements ---
+const DOM = {
+    canvas: document.getElementById('gameCanvas'),
+    ctx: document.getElementById('gameCanvas').getContext('2d'),
+    topBar: document.getElementById('top-bar'),
+    hudStage: document.getElementById('hud-stage'),
+    hudScore: document.getElementById('hud-score'),
+    screens: {
+        menu: document.getElementById('screen-menu'),
+        dialog: document.getElementById('screen-dialog'),
+        puzzle: document.getElementById('screen-puzzle'),
+        quiz: document.getElementById('screen-quiz'),
+        victory: document.getElementById('screen-victory')
+    },
+    hideAllScreens() { Object.values(this.screens).forEach(s => s.classList.add('hidden')); },
+    showScreen(name) { this.hideAllScreens(); this.screens[name].classList.remove('hidden'); }
+};
+
+// --- 4. Game Engine (Canvas) ---
+class Entity {
+    constructor(x, y, emoji, size) {
+        this.x = x; this.y = y; this.emoji = emoji; this.size = size;
+        this.vx = 0; this.vy = 0; this.active = true;
+    }
+    draw(ctx) {
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, this.x, this.y);
+    }
+    update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        this.vx = (Math.random() - 0.5) * 200;
+        this.vy = (Math.random() - 0.5) * 200;
+        this.life = 1.0;
+        this.size = Math.random() * 5 + 2;
+    }
+    update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.life -= dt * 1.5;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = Math.max(0, this.life);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function createSplash(x, y, color = '#38bdf8') {
+    for(let i=0; i<15; i++) State.particles.push(new Particle(x, y, color));
+}
+
+// Stage 1: Eggs
+let eggsHatched = 0;
+function initStage1() {
+    State.entities = [];
+    eggsHatched = 0;
+    for(let i=0; i<5; i++) {
+        let e = new Entity(
+            State.width/2 + (Math.random()-0.5)*200,
+            State.height/2 + (Math.random()-0.5)*300,
+            '🫧', 60
+        );
+        e.vy = -20 - Math.random()*30; // float up slowly
+        State.entities.push(e);
+    }
+}
+
+// Stage 2: Tadpole Swim
+let playerTadpole;
+let spawnTimer = 0;
+function initStage2() {
+    State.entities = [];
+    playerTadpole = new Entity(State.width/2, State.height/2 + 100, '🪱', 50); // Tadpole
+    State.entities.push(playerTadpole);
+    eggsHatched = 0; // reuse for food collected
+}
+
+// Stage 4: Frog Jump
+let playerFrog;
+let cameraY = 0;
+let platforms = [];
+function initStage4() {
+    State.entities = [];
+    platforms = [];
+    cameraY = 0;
+    playerFrog = new Entity(State.width/2, State.height - 100, '🐸', 50);
+    playerFrog.vy = -400; // Initial jump
+    
+    // Initial platforms
+    for(let i=0; i<10; i++) {
+        platforms.push({ x: Math.random()*(State.width-80)+40, y: State.height - 100 - i*150, type: 'leaf' });
+    }
+}
+
+// Main Update Loop
+let lastTime = 0;
+function update(timestamp) {
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // Cap delta time
+    lastTime = timestamp;
+
+    DOM.ctx.clearRect(0, 0, State.width, State.height);
+
+    // Rain effect
+    if(State.isRaining) {
+        if(Math.random() < 0.3) {
+            State.rainDrops.push({x: Math.random()*State.width, y: -20, speed: 400 + Math.random()*200});
         }
+        DOM.ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        DOM.ctx.lineWidth = 2;
+        DOM.ctx.beginPath();
+        for(let i=State.rainDrops.length-1; i>=0; i--) {
+            let r = State.rainDrops[i];
+            r.y += r.speed * dt;
+            DOM.ctx.moveTo(r.x, r.y);
+            DOM.ctx.lineTo(r.x - 5, r.y + 15);
+            if(r.y > State.height) State.rainDrops.splice(i, 1);
+        }
+        DOM.ctx.stroke();
+    }
 
-        function nextQuestion() {
-            if (gameState.currentStep >= gameState.totalSteps) {
-                showResults();
-                return;
+    // --- State: STAGE 1 (Hatch Eggs) ---
+    if (State.current === GAME_STATE.STAGE_1) {
+        DOM.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        DOM.ctx.font = '20px Mali';
+        DOM.ctx.fillText('แตะที่ไข่กบเพื่อให้ฟัก!', State.width/2, 100);
+
+        State.entities.forEach(e => {
+            if(e.active) {
+                e.x += Math.sin(timestamp/200 + e.y) * 1; // wobble
+                e.y += e.vy * dt;
+                if(e.y < -50) e.y = State.height + 50; // wrap around
+                e.draw(DOM.ctx);
             }
+        });
 
-            const dataSet = gameState.currentModule === 'abc' ? DATA_ABC : DATA_THAI;
-            const correct = dataSet[Math.floor(Math.random() * dataSet.length)];
+        if(State.isTouching) {
+            State.entities.forEach(e => {
+                if(e.active && Math.hypot(e.x - State.touchX, e.y - State.touchY) < 50) {
+                    e.active = false;
+                    createSplash(e.x, e.y);
+                    Audio.bloop();
+                    addScore(1);
+                    eggsHatched++;
+                    if(eggsHatched >= 5) {
+                        setTimeout(() => triggerDialog([
+                            "เก่งมาก! ไข่ฟักกลายเป็นลูกอ๊อดแล้ว 🪱",
+                            "ลูกอ๊อดจะอาศัยในน้ำและหายใจด้วยเหงือก"
+                        ], () => changeState(GAME_STATE.STAGE_2)), 1000);
+                        State.current = -1; // Wait state
+                    }
+                }
+            });
+            State.isTouching = false; // Reset touch
+        }
+    }
+
+    // --- State: STAGE 2 (Tadpole Swim) ---
+    if (State.current === GAME_STATE.STAGE_2) {
+        DOM.ctx.fillText('ลากนิ้วเพื่อว่ายน้ำ เก็บสาหร่าย ระวังปลาใหญ่!', State.width/2, 100);
+
+        // Movement
+        playerTadpole.x += (State.touchX - playerTadpole.x) * 5 * dt;
+        playerTadpole.y += (State.touchY - playerTadpole.y) * 5 * dt;
+        
+        // Boundaries
+        playerTadpole.x = Math.max(30, Math.min(State.width-30, playerTadpole.x));
+        playerTadpole.y = Math.max(30, Math.min(State.height-30, playerTadpole.y));
+
+        playerTadpole.draw(DOM.ctx);
+
+        // Spawn Enemies / Food
+        spawnTimer -= dt;
+        if(spawnTimer <= 0) {
+            let isEnemy = Math.random() > 0.6;
+            let type = isEnemy ? '🐟' : '🌿';
+            let e = new Entity(Math.random()*State.width, -50, type, isEnemy ? 60 : 40);
+            e.vy = (isEnemy ? 150 : 100) + Math.random()*50;
+            e.isEnemy = isEnemy;
+            State.entities.push(e);
+            spawnTimer = 0.5;
+        }
+
+        for(let i=State.entities.length-1; i>=1; i--) {
+            let e = State.entities[i];
+            e.update(dt);
+            e.draw(DOM.ctx);
             
-            document.getElementById('target-display').innerText = correct.char;
-            
-            // Generate options
-            let options = [correct];
-            while (options.length < 4) {
-                let random = dataSet[Math.floor(Math.random() * dataSet.length)];
-                if (!options.find(o => o.char === random.char)) options.push(random);
+            // Collision
+            let dist = Math.hypot(e.x - playerTadpole.x, e.y - playerTadpole.y);
+            if(dist < 40) {
+                if(e.isEnemy) {
+                    Audio.wrong();
+                    createSplash(playerTadpole.x, playerTadpole.y, '#ef4444');
+                    // Reset position
+                    playerTadpole.x = State.width/2;
+                    playerTadpole.y = State.height/2 + 100;
+                } else {
+                    Audio.bloop();
+                    createSplash(e.x, e.y, '#4ade80');
+                    addScore(2);
+                    eggsHatched++; // Using as food counter
+                    if(eggsHatched >= 10) {
+                        setTimeout(() => triggerDialog([
+                            "ลูกอ๊อดกินอาหารจนตัวโตขึ้นแล้ว!",
+                            "ถึงเวลาของการเปลี่ยนแปลงครั้งใหญ่..."
+                        ], () => changeState(GAME_STATE.PUZZLE)), 500);
+                        State.current = -1;
+                    }
+                }
+                State.entities.splice(i, 1);
+            } else if(e.y > State.height + 50) {
+                State.entities.splice(i, 1);
             }
-            options.sort(() => Math.random() - 0.5);
+        }
+    }
 
-            const grid = document.getElementById('options-grid');
-            grid.innerHTML = '';
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "bg-blue-50 p-6 rounded-2xl border-4 border-blue-100 hover:border-blue-400 text-4xl transition-all btn-bounce";
-                btn.innerHTML = `<div>${opt.img}</div><div class="text-sm mt-1 text-gray-500 font-bold">${opt.name}</div>`;
-                btn.onclick = () => checkAnswer(opt.char === correct.char, btn);
-                grid.appendChild(btn);
+    // --- State: STAGE 4 (Frog Jump) ---
+    if (State.current === GAME_STATE.STAGE_4) {
+        // Physics
+        playerFrog.vy += 800 * dt; // Gravity
+        playerFrog.y += playerFrog.vy * dt;
+        
+        // Touch to move horizontally
+        if(State.isTouching) {
+            playerFrog.x += (State.touchX > State.width/2 ? 1 : -1) * 300 * dt;
+        }
+        playerFrog.x = Math.max(20, Math.min(State.width-20, playerFrog.x)); // Bounds
+
+        // Camera follow
+        let targetCamY = playerFrog.y - State.height/2;
+        if(targetCamY < cameraY) cameraY = targetCamY;
+
+        // Draw Platforms
+        DOM.ctx.save();
+        DOM.ctx.translate(0, -cameraY);
+        
+        DOM.ctx.font = '40px Arial';
+        platforms.forEach(p => {
+            DOM.ctx.fillText('🪷', p.x, p.y);
+            // Collision falling down
+            if(playerFrog.vy > 0 && 
+               playerFrog.y + 20 > p.y - 20 && playerFrog.y < p.y + 20 &&
+               Math.abs(playerFrog.x - p.x) < 50) {
+                playerFrog.vy = -550; // Bounce
+                playerFrog.y = p.y - 20;
+                Audio.bloop();
+                createSplash(playerFrog.x, playerFrog.y + cameraY, '#ffffff');
+                addScore(1);
+            }
+        });
+
+        playerFrog.draw(DOM.ctx);
+        DOM.ctx.restore();
+
+        // Generate new platforms
+        if(platforms[platforms.length-1].y > cameraY - State.height) {
+            platforms.push({ 
+                x: Math.random()*(State.width-80)+40, 
+                y: platforms[platforms.length-1].y - 100 - Math.random()*80
             });
         }
+        
+        // Remove old platforms
+        if(platforms[0].y > cameraY + State.height + 100) platforms.shift();
 
-        function checkAnswer(isCorrect, btn) {
-            if (isCorrect) {
-                playSound('correct');
-                btn.classList.replace('border-blue-100', 'border-green-400');
-                btn.classList.add('bg-green-50');
-                gameState.player.stars += 1;
-                gameState.player.coins += 5;
-                gameState.score += 1;
-                createConfetti();
-                
-                setTimeout(() => {
-                    gameState.currentStep++;
-                    updateProgress();
-                    updateUI();
-                    nextQuestion();
-                }, 800);
+        // Game Over (Fall)
+        if(playerFrog.y > cameraY + State.height) {
+            Audio.wrong();
+            initStage4(); // Restart jumping
+        }
+
+        // Win condition
+        if(-cameraY > 2000) { // Reached height
+            setTimeout(() => triggerDialog([
+                "เยี่ยมมาก! กบน้อยกระโดดขึ้นฝั่งได้แล้ว",
+                "กบโตเต็มวัยจะอาศัยทั้งบนบกและในน้ำ หายใจด้วยปอดและผิวหนัง"
+            ], () => changeState(GAME_STATE.QUIZ)), 500);
+            State.current = -1;
+        }
+    }
+
+    // Update & Draw Particles
+    for(let i=State.particles.length-1; i>=0; i--) {
+        let p = State.particles[i];
+        p.update(dt);
+        p.draw(DOM.ctx);
+        if(p.life <= 0) State.particles.splice(i, 1);
+    }
+
+    requestAnimationFrame(update);
+}
+
+// --- 5. Game Flow Logic ---
+
+function setHUD(stageNum) {
+    State.stage = stageNum;
+    DOM.hudStage.innerText = `ด่าน: ${stageNum}`;
+}
+
+function addScore(pts) {
+    State.score += pts;
+    DOM.hudScore.innerText = State.score;
+    DOM.hudScore.parentElement.classList.add('bouncing-in');
+    setTimeout(()=>DOM.hudScore.parentElement.classList.remove('bouncing-in'), 500);
+}
+
+function triggerDialog(texts, onComplete) {
+    State.dialogQueue = texts;
+    DOM.showScreen('dialog');
+    DOM.topBar.classList.remove('hidden');
+    
+    const showNext = () => {
+        if(State.dialogQueue.length > 0) {
+            Audio.ribbit();
+            document.getElementById('dialog-text').innerText = State.dialogQueue.shift();
+        } else {
+            document.getElementById('btn-next-dialog').removeEventListener('click', showNext);
+            onComplete();
+        }
+    };
+    
+    const btn = document.getElementById('btn-next-dialog');
+    // Remove old listeners to prevent double firing
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', showNext);
+    
+    showNext();
+}
+
+function changeState(newState) {
+    State.current = newState;
+    DOM.hideAllScreens();
+    
+    switch(newState) {
+        case GAME_STATE.STAGE_1:
+            setHUD(1);
+            State.isRaining = false;
+            initStage1();
+            break;
+        case GAME_STATE.STAGE_2:
+            setHUD(2);
+            State.isRaining = false;
+            initStage2();
+            break;
+        case GAME_STATE.PUZZLE:
+            setHUD(3);
+            DOM.showScreen('puzzle');
+            break;
+        case GAME_STATE.STAGE_4:
+            setHUD(4);
+            State.isRaining = true;
+            initStage4();
+            break;
+        case GAME_STATE.QUIZ:
+            startQuizFlow();
+            break;
+        case GAME_STATE.VICTORY:
+            DOM.topBar.classList.add('hidden');
+            document.getElementById('final-score').innerText = State.score;
+            DOM.showScreen('victory');
+            Audio.win();
+            createConfetti();
+            break;
+    }
+}
+
+// Puzzle Logic
+document.querySelectorAll('.puzzle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const isCorrect = e.target.getAttribute('data-correct') === 'true';
+        if(isCorrect) {
+            Audio.win();
+            e.target.classList.replace('btn-blue', 'btn'); // turn green
+            setTimeout(() => {
+                triggerDialog([
+                    "ถูกต้อง! ขาหลังจะงอกออกมาก่อน",
+                    "จากนั้นขาหน้าจะตามมา และหางจะค่อยๆ หดสั้นลง"
+                ], () => changeState(GAME_STATE.STAGE_4));
+            }, 1000);
+        } else {
+            Audio.wrong();
+            e.target.classList.add('opacity-50');
+            e.target.style.transform = 'translateX(5px)';
+            setTimeout(()=> e.target.style.transform = 'none', 100);
+        }
+    });
+});
+
+// Quiz Logic
+function startQuizFlow() {
+    State.currentQuizIndex = 0;
+    DOM.showScreen('quiz');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    if(State.currentQuizIndex >= Quizzes.length) {
+        changeState(GAME_STATE.VICTORY);
+        return;
+    }
+    
+    const qData = Quizzes[State.currentQuizIndex];
+    document.getElementById('quiz-question').innerText = qData.q;
+    const optContainer = document.getElementById('quiz-options');
+    const feedback = document.getElementById('quiz-feedback');
+    optContainer.innerHTML = '';
+    feedback.innerText = '';
+
+    qData.opts.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-blue text-left pl-6 text-sm';
+        btn.innerText = opt;
+        btn.onclick = () => {
+            // Disable all buttons
+            Array.from(optContainer.children).forEach(b => b.disabled = true);
+            
+            if(index === qData.ans) {
+                Audio.coin();
+                btn.classList.replace('btn-blue', 'btn');
+                feedback.innerText = "⭐ ถูกต้อง! ⭐";
+                feedback.className = "mt-3 text-lg font-bold text-center text-green-500 h-6 bouncing-in";
+                addScore(5);
             } else {
-                playSound('wrong');
-                btn.classList.add('animate-shake', 'bg-red-50', 'border-red-300');
-                setTimeout(() => btn.classList.remove('bg-red-50', 'border-red-300'), 500);
+                Audio.wrong();
+                btn.style.background = '#ef4444';
+                feedback.innerText = "❌ ผิดจ้า";
+                feedback.className = "mt-3 text-lg font-bold text-center text-red-500 h-6";
+                // highlight correct
+                optContainer.children[qData.ans].classList.replace('btn-blue', 'btn');
             }
-        }
-
-        function updateProgress() {
-            const percent = (gameState.currentStep / gameState.totalSteps) * 100;
-            document.getElementById('game-progress').style.width = percent + '%';
-        }
-
-        function updateUI() {
-            document.getElementById('ui-stars').innerText = '⭐ ' + gameState.player.stars;
-            document.getElementById('ui-coins').innerText = '🪙 ' + gameState.player.coins;
-        }
-
-        function showResults() {
-            document.getElementById('result-name').innerText = `${gameState.player.name} (${gameState.player.class})`;
-            document.getElementById('result-stars').innerText = gameState.score;
-            document.getElementById('result-coins').innerText = gameState.score * 5;
-            saveStats();
-            switchScreen('screen-result');
-        }
-
-        function goHome() {
-            switchScreen('screen-menu');
-        }
-
-        // --- Sound & Effects ---
-        function toggleSound() {
-            gameState.isMuted = !gameState.isMuted;
-            document.getElementById('sound-btn').innerText = gameState.isMuted ? '🔇' : '🔊';
-        }
-
-        function playSound(type) {
-            if (gameState.isMuted) return;
-            // Native synthesis for accessibility
-            const msg = new SpeechSynthesisUtterance();
-            msg.lang = 'th-TH';
-            if (type === 'correct') {
-                msg.text = 'เก่งมากจ้า';
-            } else if (type === 'wrong') {
-                msg.text = 'ลองใหม่นะ';
-            }
-            window.speechSynthesis.speak(msg);
-        }
-
-        function createConfetti() {
-            for (let i = 0; i < 20; i++) {
-                const c = document.createElement('div');
-                c.className = 'confetti';
-                c.style.left = Math.random() * 100 + 'vw';
-                c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                c.style.animationDelay = Math.random() * 2 + 's';
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 3000);
-            }
-        }
-
-        // --- Data Persistence ---
-        function savePlayer() {
-            localStorage.setItem('thai_quest_player', JSON.stringify(gameState.player));
-        }
-
-        function saveStats() {
-            let history = JSON.parse(localStorage.getItem('thai_quest_history') || '[]');
-            history.push({
-                ...gameState.player,
-                timestamp: new Date().toISOString(),
-                module: gameState.currentModule,
-                lastScore: gameState.score
-            });
-            localStorage.setItem('thai_quest_history', JSON.stringify(history));
-        }
-
-        // --- Admin Dash ---
-        function showAdmin() {
-            const pass = prompt('ใส่รหัสผ่านคุณครู:');
-            if (pass === 'admin1234') {
-                renderAdminTable();
-                switchScreen('screen-admin');
-            }
-        }
-
-        function renderAdminTable() {
-            const history = JSON.parse(localStorage.getItem('thai_quest_history') || '[]');
-            const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = history.map(h => `
-                <tr class="border-b">
-                    <td class="p-2">${h.name}</td>
-                    <td class="p-2">${h.class || '-'}</td>
-                    <td class="p-2">${h.stars}</td>
-                    <td class="p-2 font-bold">${h.lastScore}/${gameState.totalSteps}</td>
-                </tr>
-            `).join('');
-        }
-
-        function clearData() {
-            if(confirm('ลบข้อมูลนักเรียนทั้งหมด?')) {
-                localStorage.clear();
-                alert('ลบเรียบร้อย');
-                window.location.reload();
-            }
-        }
-
-        function exportData() {
-            const history = localStorage.getItem('thai_quest_history') || '[]';
-            const blob = new Blob([history], {type: 'text/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'student_data.json';
-            a.click();
-        }
-
-        // Init
-        window.onload = () => {
-            console.log("🇹🇭 ผจญภัยอาณาจักรพยัญชนะไทย พร้อมสนุก!");
-            // Smooth animations for mobile safari
-            document.body.addEventListener('touchstart', () => {}, {passive: true});
+            
+            setTimeout(() => {
+                State.currentQuizIndex++;
+                showQuizQuestion();
+            }, 1500);
         };
-    </script>
+        optContainer.appendChild(btn);
+    });
+}
+
+function createConfetti() {
+    for(let i=0; i<100; i++) {
+        let p = new Particle(State.width/2, State.height/2, `hsl(${Math.random()*360}, 100%, 50%)`);
+        p.vx = (Math.random()-0.5) * 500;
+        p.vy = (Math.random()-0.5) * 500 - 200;
+        p.life = 3.0;
+        State.particles.push(p);
+    }
+}
+
+// --- 6. Event Listeners & Init ---
+
+function resize() {
+    const container = document.getElementById('game-container');
+    State.width = container.clientWidth;
+    State.height = container.clientHeight;
+    DOM.canvas.width = State.width;
+    DOM.canvas.height = State.height;
+}
+
+window.addEventListener('resize', resize);
+
+// Input handling (Mouse/Touch unified)
+function handleInputMove(x, y) {
+    const rect = DOM.canvas.getBoundingClientRect();
+    State.touchX = x - rect.left;
+    State.touchY = y - rect.top;
+}
+
+DOM.canvas.addEventListener('mousedown', (e) => { State.isTouching = true; handleInputMove(e.clientX, e.clientY); });
+DOM.canvas.addEventListener('mousemove', (e) => { if(State.isTouching) handleInputMove(e.clientX, e.clientY); });
+DOM.canvas.addEventListener('mouseup', () => State.isTouching = false);
+
+DOM.canvas.addEventListener('touchstart', (e) => { 
+    State.isTouching = true; 
+    handleInputMove(e.touches[0].clientX, e.touches[0].clientY); 
+    if(State.current === GAME_STATE.STAGE_1) { e.preventDefault(); } // allow tapping eggs fast
+}, {passive: false});
+DOM.canvas.addEventListener('touchmove', (e) => { 
+    if(State.isTouching) handleInputMove(e.touches[0].clientX, e.touches[0].clientY);
+    e.preventDefault(); // Prevent scroll while playing
+}, {passive: false});
+DOM.canvas.addEventListener('touchend', () => State.isTouching = false);
+
+
+// UI Buttons
+document.getElementById('btn-start').addEventListener('click', () => {
+    Audio.init();
+    Audio.coin();
+    DOM.hideAllScreens();
+    triggerDialog([
+        "สวัสดีจ้ะ! วันนี้เราจะมาดูการเติบโตของกบกัน",
+        "กบเริ่มจากเป็น 'ไข่' ในน้ำ แตะที่ไข่เพื่อช่วยให้พวกมันฟักสิ!"
+    ], () => changeState(GAME_STATE.STAGE_1));
+});
+
+document.getElementById('btn-sound').addEventListener('click', (e) => {
+    Audio.init();
+    Audio.soundEnabled = !Audio.soundEnabled;
+    e.target.innerText = Audio.soundEnabled ? '🔊 เปิดเสียง' : '🔇 ปิดเสียง';
+    if(Audio.soundEnabled) Audio.bloop();
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+    State.score = 0;
+    DOM.hudScore.innerText = '0';
+    changeState(GAME_STATE.MENU);
+    DOM.showScreen('menu');
+});
+
+// Start Game Loop
+resize();
+requestAnimationFrame(update);
+
+</script>
 </body>
 </html>
